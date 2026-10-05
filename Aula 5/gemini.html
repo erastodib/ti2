@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Gemini</title>
+</head>
+<body>
+
+  <h1>Perguntar ao Gemini</h1>
+  <p>⚠️ Chave no código: use só no seu computador. Plano gratuito tem limites de uso.</p>
+
+  <textarea id="pergunta" rows="5" cols="60" oninput="verificarCampo()"></textarea><br><br>
+  <button id="btnPerguntar" onclick="enviar()" hidden>Perguntar ao Gemini</button>
+
+  <div id="resposta"></div>
+
+  <script>
+    const CHAVE_API = "COLE_SUA_CHAVE_AQUI";   // troque pela sua chave
+    const URL_GEMINI = "https://generativelanguage.googleapis.com/v1beta/interactions";
+    const MODELO = "gemini-3.8-flash";
+
+    // FUNÇÃO: envia a pergunta e RETORNA o texto da resposta
+    async function perguntarGemini(pergunta) {
+      const resposta = await fetch(URL_GEMINI, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-goog-api-key": CHAVE_API
+        },
+        body: JSON.stringify({ model: MODELO, input: pergunta })
+      });
+
+      if (resposta.status === 429) {
+        throw new Error("Limite do plano gratuito atingido. Aguarde 1 minuto.");
+      }
+      if (!resposta.ok) {
+        throw new Error("Erro " + resposta.status + ". Confira a chave e tente novamente.");
+      }
+
+      const dados = await resposta.json();
+      return extrairTexto(dados);
+    }
+
+    // FUNÇÃO: procura o texto dentro do JSON devolvido
+    function extrairTexto(dados) {
+      if (dados.output_text) {
+        return dados.output_text;
+      }
+      if (dados.steps && dados.steps.length > 0) {
+        const ultimo = dados.steps[dados.steps.length - 1];
+        if (ultimo.content && ultimo.content[0] && ultimo.content[0].text) {
+          return ultimo.content[0].text;
+        }
+      }
+      return JSON.stringify(dados, null, 2);
+    }
+
+    // Mostra o botão só quando há uma pergunta digitada
+    function verificarCampo() {
+      const pergunta = document.getElementById("pergunta").value;
+      document.getElementById("btnPerguntar").hidden = (pergunta.trim() === "");
+    }
+
+    // Lê a pergunta, chama a função e mostra o resultado
+    async function enviar() {
+      const pergunta = document.getElementById("pergunta").value;
+      const botao = document.getElementById("btnPerguntar");
+      const areaResposta = document.getElementById("resposta");
+
+      if (CHAVE_API === "COLE_SUA_CHAVE_AQUI") {
+        areaResposta.innerText = "Você ainda não colocou sua chave na constante CHAVE_API.";
+        return;
+      }
+
+      areaResposta.innerText = "Pensando...";
+      botao.disabled = true;   // evita cliques repetidos
+
+      try {
+        areaResposta.innerText = await perguntarGemini(pergunta);
+      } catch (erro) {
+        areaResposta.innerText = erro.message;
+      } finally {
+        botao.disabled = false;
+      }
+    }
+  </script>
+
+</body>
+</html>

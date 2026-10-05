@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Função</title>
+</head>
+<body>
+    
+    <h1>Função</h1>
+
+    <label>Primeiro número:</label><br>
+    <input type="number" id="n1" oninput="verificarCampos()"><br><br>
+
+    <label>Segundo número:</label><br>
+    <input type="number" id="n2" oninput="verificarCampos()"><br><br>
+
+    <button id="btnMultiplicar" onclick="calcular()" hidden>Multiplicar</button>
+
+    <p id="resultado"></p>
+
+    <script>
+        //FUNÇÃO: recebe dois números e RETORNA a multiplicação
+
+        function multiplicar(a,b){
+            return a*b;
+        }
+
+        //Mostra o botão só quando dois campos estão preenchidos
+        function verificarCampos(){
+            const n1 = document.getElementById("n1").value;
+            const n2 = document.getElementById("n2").value;
+            document.getElementById("btnMultiplicar").hidden = (n1 === "" || n2 === "");
+        }
+
+        //Lê os números, chama a função e mostra o resultado
+        function calcular(){
+            const n1 = Number(document.getElementById("n1").value);
+            const n2 = Number(document.getElementById("n2").value);
+            const resultado = multiplicar(n1,n2); //guarda o valor RETORNADO
+            document.getElementById("resultado").innerText = n1 + "x" + n2 + "=" + resultado;
+        }
+    </script>
+
+</body>
+</html>
